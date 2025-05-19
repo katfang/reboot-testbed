@@ -16,12 +16,23 @@ export default function Home() {
   }
 
   async function clickPiece() {
-    const { aborted } = await pieceRef.movePiece();
+    const { aborted } = await pieceRef.movePiece({ locId:  "empty-loc" });
     if (aborted) {
       console.log(aborted);
     } else {
       console.log("It succeeded");
     }
+    console.log("done");
+  }
+
+  async function clickPiece2() {
+    const { aborted } = await pieceRef.movePiece({ locId: "working-loc" });
+    if (aborted) {
+      console.log(aborted);
+    } else {
+      console.log("It succeeded");
+    }
+    console.log("done");
   }
 
   return (
@@ -39,6 +50,13 @@ export default function Home() {
         onClick={clickPiece}
       >
         Repro From Piece
+      </button>
+
+      <button
+        className="border-1 border-red-400 p-2 m-2 cursor-pointer"
+        onClick={clickPiece2}
+      >
+        Works if Get Succeeds
       </button>
     </div>
   );

@@ -20,6 +20,8 @@ Inspect the reboot backend at [http://localhost:9991/__/inspect](http://localhos
 
 This uses react, reboot, next, typescript, tailwind? I guess?
 
+The difference between "Repro ..." and "Works if Get Succeeds" is in the working case, the state for the ID associated with the "get" exists, whereas for the non-working cases, that ID is NOT associated with saved state.
+
 ## Repro the bug via backend
 
 in `backend/main.ts`, uncomment out

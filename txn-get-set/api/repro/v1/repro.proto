@@ -19,9 +19,13 @@ message ReproPiece {
 }
 
 service ReproPieceMethods {
-    rpc MovePiece(Empty) returns (Empty) {
+    rpc MovePiece(MoveRequest) returns (Empty) {
         option (rbt.v1alpha1.method).transaction = {};
     }
+}
+
+message MoveRequest {
+    string loc_id = 1;
 }
 
 message ReproLocPieceIndex {

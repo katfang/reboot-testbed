@@ -5,11 +5,12 @@ import {
   Empty,
   ReproGame,
   ReproPiece,
-  ReproLocPieceIndex
+  ReproLocPieceIndex,
+  MoveRequest
 } from "../../api/repro/v1/repro_rbt.js"
 
 const WHITE_PAWN = "white-pawn"
-const LOCATION_ID = "2-0";
+const LOCATION_ID = "empty-loc";
 
 export class ReproGameServicer extends ReproGame.Servicer {
   async runQueue(
@@ -18,7 +19,7 @@ export class ReproGameServicer extends ReproGame.Servicer {
     request: Empty
   ) {
     try {
-      await ReproPiece.ref(WHITE_PAWN).idempotently().movePiece(context);
+      await ReproPiece.ref(WHITE_PAWN).idempotently().movePiece(context, { locId: LOCATION_ID });
     } catch (e) {
       console.log("!!! error: ", e);
     }
@@ -30,14 +31,14 @@ export class ReproPieceServicer extends ReproPiece.Servicer {
   async movePiece(
     context: TransactionContext,
     state: ReproPiece.State,
-    request: Empty
+    request: MoveRequest
   ) {
     let pieceId = null; 
 
     // try get, if it doesn't exist, that's totally fine.
     try {
       console.log("!!! want to get");
-      pieceId = (await ReproLocPieceIndex.ref(LOCATION_ID).get(context)).pieceId;
+      pieceId = (await ReproLocPieceIndex.ref(request.locId).get(context)).pieceId;
       // If we successfully get a piece, we should throw (represents a pawn trying to move forward into a space where a piece already is.)
     } catch (e) {
       if (e instanceof ReproLocPieceIndex.GetAborted && e.error instanceof errors_pb.StateNotConstructed) {
@@ -46,7 +47,7 @@ export class ReproPieceServicer extends ReproPiece.Servicer {
     }
 
     console.log("!!! want to set");
-    await ReproLocPieceIndex.ref(LOCATION_ID).set(
+    await ReproLocPieceIndex.ref(request.locId).set(
       context,
       { pieceId: context.stateId }
     );
