@@ -38,6 +38,7 @@ export class ReproPieceServicer extends ReproPiece.Servicer {
     try {
       console.log("!!! want to get");
       pieceId = (await ReproLocPieceIndex.ref(LOCATION_ID).get(context)).pieceId;
+      // If we successfully get a piece, we should throw (represents a pawn trying to move forward into a space where a piece already is.)
     } catch (e) {
       if (e instanceof ReproLocPieceIndex.GetAborted && e.error instanceof errors_pb.StateNotConstructed) {
         pieceId = null;
