@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package cheaoss.v1;
+
+import "cheaoss/v1/cheaoss.proto";
+import "cheaoss/v1/move.proto";
+import "cheaoss/v1/util.proto";
+import "rbt/v1alpha1/options.proto";
+
+enum PieceType {
+    PIECES_TYPE_UNKNOWN = 0;
+    PAWN = 1;
+    BISHOP = 2;
+    KNIGHT = 3;
+    ROOK = 4;
+    QUEEN = 5;
+    KING = 6;
+}
+
+message Piece {
+    option (rbt.v1alpha1.state) = {};
+    cheaoss.v1.Team team = 1;
+    PieceType type = 2;
+    cheaoss.v1.Location loc = 3;
+    bool has_moved = 4;
+}
+
+service PieceMethods {
+    rpc MakePiece(cheaoss.v1.Piece) returns (cheaoss.v1.EmptyResponse) {
+        option (rbt.v1alpha1.method) = {
+            transaction: {},
+            errors: [ "cheaoss.v1.LocationRequiredError" ],
+        };
+    }
+
+    rpc Piece(cheaoss.v1.EmptyRequest) returns (cheaoss.v1.Piece) {
+        option (rbt.v1alpha1.method).reader = {};
+    }
+
+    rpc MovePiece(cheaoss.v1.MoveRequest) returns (cheaoss.v1.EmptyResponse) {
+        option (rbt.v1alpha1.method) = {
+            transaction: {},
+            errors: [ "cheaoss.v1.InvalidMoveError" ],
+        };
+    }
+
+    rpc Remove(cheaoss.v1.EmptyRequest) returns (cheaoss.v1.EmptyResponse) {
+        option (rbt.v1alpha1.method).transaction = {};
+    }
+}
+
+// Maps gameid-row-col --> pieceid
+message LocPieceIndex {
+    option (rbt.v1alpha1.state) = {};
+    string piece_id = 1;
+}
+
+service LocPieceIndexMethods {
+    rpc Get(cheaoss.v1.EmptyRequest) returns (cheaoss.v1.LocPieceIndex) {
+        option (rbt.v1alpha1.method).reader = {};
+    }
+
+    rpc Set(cheaoss.v1.LocPieceIndex) returns (cheaoss.v1.EmptyResponse) {
+        option (rbt.v1alpha1.method).writer = {};
+    }
+
+    rpc Clear(cheaoss.v1.EmptyRequest) returns (cheaoss.v1.EmptyResponse) {
+        option (rbt.v1alpha1.method).writer = {};
+    }
+}

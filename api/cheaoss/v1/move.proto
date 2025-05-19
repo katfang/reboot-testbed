@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package cheaoss.v1;
+
+import "cheaoss/v1/util.proto";
+import "rbt/v1alpha1/options.proto";
+
+enum MoveStatus {
+    MOVE_UNKNOWN = 0;
+    MOVE_QUEUED = 1;
+    MOVE_EXECUTED = 2;
+    MOVE_ERRORED = 3;
+    MOVE_CLEARED = 4;
+}
+
+message Location {
+    uint32 row = 1;
+    uint32 col = 2;
+}
+
+message Move {
+    option (rbt.v1alpha1.state) = {};
+    string player_id = 1;
+    string piece_id = 2;
+    Location start = 3;
+    Location end = 4;
+    MoveStatus status = 5;
+    string error = 6;
+}
+
+service MoveMethods {
+    // Caller is responsible for making the id
+    rpc Store(cheaoss.v1.Move) returns (cheaoss.v1.EmptyResponse) {
+        option (rbt.v1alpha1.method).writer = {};
+    }
+
+    rpc SetStatus(SetStatusRequest) returns (cheaoss.v1.EmptyRequest) {
+        option (rbt.v1alpha1.method).writer = {};
+    }
+
+    rpc Get(cheaoss.v1.EmptyRequest) returns (cheaoss.v1.Move) {
+        option (rbt.v1alpha1.method).reader = {};
+    }
+
+    rpc Clear(cheaoss.v1.EmptyRequest) returns (cheaoss.v1.EmptyResponse) {
+        option (rbt.v1alpha1.method).writer = {};
+    }
+}
+
+message MoveRequest {
+    string player_id = 1;
+    string piece_id = 2;
+    Location start = 3;
+    Location end = 4;
+}
+
+message SetStatusRequest {
+    MoveStatus status = 1;
+    string error = 2;
+}
+
+message InvalidMoveError {
+    string message = 1;
+}
+
+message LocationRequiredError {}

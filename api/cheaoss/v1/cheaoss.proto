@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package cheaoss.v1;
+
+enum Team {
+    TEAM_UNKNOWN = 0;
+    WHITE = 1;
+    BLACK = 2;
+}
