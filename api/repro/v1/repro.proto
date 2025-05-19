@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package repro.v1;
+
+import "rbt/v1alpha1/options.proto";
+
+message ReproGame {
+    option (rbt.v1alpha1.state) = {};
+}
+
+service ReproGameMethods {
+    rpc RunQueue(Empty) returns (Empty) {
+        option (rbt.v1alpha1.method).transaction = {};
+    }
+}
+
+message ReproPiece {
+    option (rbt.v1alpha1.state) = {};
+}
+
+service ReproPieceMethods {
+    rpc MovePiece(Empty) returns (Empty) {
+        option (rbt.v1alpha1.method).transaction = {};
+    }
+}
+
+message ReproLocPieceIndex {
+    option (rbt.v1alpha1.state) = {};
+    string piece_id = 1;
+}
+
+service ReproLocPieceIndexMethods {
+    rpc Get(Empty) returns (repro.v1.ReproLocPieceIndex) {
+        option (rbt.v1alpha1.method).reader = {};
+    }
+
+    rpc Set(repro.v1.ReproLocPieceIndex) returns (Empty) {
+        option (rbt.v1alpha1.method).writer = {};
+    }
+}
+
+message Empty {}

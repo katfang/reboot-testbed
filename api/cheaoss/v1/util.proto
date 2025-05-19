@@ -1,6 +1,0 @@
-syntax = "proto3";
-
-package cheaoss.v1;
-
-message EmptyRequest {}
-message EmptyResponse {}
