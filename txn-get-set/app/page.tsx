@@ -4,7 +4,7 @@ import { useReproGame, useReproPiece } from "../api/repro/v1/repro_rbt_react"
 
 export default function Home() {
   const gameRef = useReproGame({ id: "singleton" });
-  const pieceRef = useReproGame({ id: "white-pawn" });
+  const pieceRef = useReproPiece({ id: "white-pawn" });
 
   async function clickGame() {
     const { aborted } = await gameRef.runQueue();
@@ -16,7 +16,7 @@ export default function Home() {
   }
 
   async function clickPiece() {
-    const { aborted } = await gameRef.runQueue();
+    const { aborted } = await pieceRef.movePiece();
     if (aborted) {
       console.log(aborted);
     } else {
