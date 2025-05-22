@@ -4,43 +4,82 @@ package repro.v1;
 
 import "rbt/v1alpha1/options.proto";
 
-message ReproGame {
+message Game {
     option (rbt.v1alpha1.state) = {};
+    repeated MoveRequest moves = 1;
+    repeated string move_ids = 2;
 }
 
-service ReproGameMethods {
-    rpc RunQueue(Empty) returns (Empty) {
+service GameMethods {
+    rpc QueueMove(MoveRequest) returns (Empty) {
         option (rbt.v1alpha1.method).transaction = {};
     }
-}
 
-message ReproPiece {
-    option (rbt.v1alpha1.state) = {};
-}
-
-service ReproPieceMethods {
-    rpc MovePiece(MoveRequest) returns (Empty) {
+    rpc CancelMove(MoveRequest) returns (Empty) {
         option (rbt.v1alpha1.method).transaction = {};
     }
-}
 
-message MoveRequest {
-    string loc_id = 1;
-}
+    rpc AckMove(AckMoveRequest) returns (Empty) {
+        option (rbt.v1alpha1.method).transaction = {};
+    }
 
-message ReproLocPieceIndex {
-    option (rbt.v1alpha1.state) = {};
-    string piece_id = 1;
-}
-
-service ReproLocPieceIndexMethods {
-    rpc Get(Empty) returns (repro.v1.ReproLocPieceIndex) {
+    rpc Moves(Empty) returns (MovesResponse)  {
         option (rbt.v1alpha1.method).reader = {};
     }
 
-    rpc Set(repro.v1.ReproLocPieceIndex) returns (Empty) {
+    rpc MovesById(Empty) returns (MovesByIdResponse) {
+        option (rbt.v1alpha1.method).reader = {};
+    }
+}
+
+message MovesResponse {
+    repeated MoveRequest moves = 1;
+}
+
+message MovesByIdResponse {
+    map<string, Move> moves_by_id = 1;
+}
+
+message MoveRequest {
+    string id = 1;
+}
+
+message AckMoveRequest {
+    string move_id = 1;
+}
+
+enum MoveStatus {
+    MOVE_UNKNOWN = 0;
+    MOVE_QUEUED = 1;
+    MOVE_EXECUTED = 2;
+    MOVE_ERRORED = 3;
+    MOVE_ACKED = 4;
+    MOVE_CANCELED = 5;
+}
+
+message Move {
+    option (rbt.v1alpha1.state) = {};
+    string id = 1;
+    MoveStatus status = 2;
+}
+
+service MoveMethods {
+    rpc Store(Move) returns (Empty) {
         option (rbt.v1alpha1.method).writer = {};
     }
+
+    rpc SetStatus(SetStatusRequest) returns (Empty) {
+        option (rbt.v1alpha1.method).writer = {};
+    }
+
+    rpc Get(Empty) returns (Move) {
+        option (rbt.v1alpha1.method).reader = {};
+    }
+
+}
+
+message SetStatusRequest {
+    MoveStatus status = 1;
 }
 
 message Empty {}

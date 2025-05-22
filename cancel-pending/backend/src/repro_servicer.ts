@@ -1,81 +1,72 @@
 import { ReaderContext, TransactionContext, WriterContext } from "@reboot-dev/reboot"
-import { errors_pb } from "@reboot-dev/reboot-api";
 
 import {
+  AckMoveRequest,
   Empty,
-  ReproGame,
-  ReproPiece,
-  ReproLocPieceIndex,
-  MoveRequest
+  Game,
+  Move,
+  MoveRequest,
+  MoveStatus,
+  SetStatusRequest
 } from "../../api/repro/v1/repro_rbt.js"
 
-const WHITE_PAWN = "white-pawn"
-const LOCATION_ID = "empty-loc";
+export class GameServicer extends Game.Servicer {
 
-export class ReproGameServicer extends ReproGame.Servicer {
-  async runQueue(
-    context: TransactionContext,
-    state: ReproGame.State,
-    request: Empty
-  ) {
-    try {
-      await ReproPiece.ref(WHITE_PAWN).idempotently().movePiece(context, { locId: LOCATION_ID });
-    } catch (e) {
-      console.log("!!! error: ", e);
+  async queueMove(context: TransactionContext, state: Game.State, request: MoveRequest) {
+    if (state.moves === undefined) {
+      state.moves = [];
     }
+    if (state.moveIds === undefined) {
+      state.moveIds = [];
+    }
+    state.moves.push(request);
+    state.moveIds.push(request.id);
+    await Move.ref(request.id).store(context, {
+      id: request.id,
+      status: MoveStatus.MOVE_QUEUED
+    });
     return {};
+  }
+
+  async cancelMove(context: TransactionContext, state: Game.State, request: MoveRequest) {
+    state.moves = state.moves.filter(item => item.id !== request.id);
+    state.moveIds = state.moveIds.filter(item => item !== request.id);
+    await Move.ref(request.id).setStatus(context, {
+      status: MoveStatus.MOVE_CANCELED
+    });
+    return {};
+  }
+
+  async ackMove(context: TransactionContext, state: Game.State, request: AckMoveRequest) {
+    await Move.ref(request.moveId).setStatus(context, { status: MoveStatus.MOVE_ACKED });
+    return {};
+  }
+
+  async moves(context: ReaderContext, state: Game.State, request: Empty) {
+    return { moves: state.moves };
+  }
+
+  async movesById(context: ReaderContext, state: Game.State, request: Empty) {
+    let moves: { [id: string ]: Move } = {};
+    for (const moveId of state.moveIds) {
+      moves[moveId] = await Move.ref(moveId).get(context);
+    }
+    console.log("!!! get moves by id", moves);
+    return { movesById: moves };
   }
 }
 
-export class ReproPieceServicer extends ReproPiece.Servicer {
-  async movePiece(
-    context: TransactionContext,
-    state: ReproPiece.State,
-    request: MoveRequest
-  ) {
-    let pieceId = null; 
-
-    // try get, if it doesn't exist, that's totally fine.
-    try {
-      console.log("!!! want to get");
-      pieceId = (await ReproLocPieceIndex.ref(request.locId).get(context)).pieceId;
-      // If we successfully get a piece, we should throw (represents a pawn trying to move forward into a space where a piece already is.)
-    } catch (e) {
-      if (e instanceof ReproLocPieceIndex.GetAborted && e.error instanceof errors_pb.StateNotConstructed) {
-        pieceId = null;
-      }
-    }
-
-    console.log("!!! want to set");
-    await ReproLocPieceIndex.ref(request.locId).set(
-      context,
-      { pieceId: context.stateId }
-    );
-
+export class MoveServicer extends Move.Servicer {
+  async store(context: WriterContext, state: Move.State, request: Move.State) {
+    state.id = request.id;
+    state.status = request.status;
     return {};
   }
-}
-
-export class ReproLocPieceIndexServicer extends ReproLocPieceIndex.Servicer {
-  async get(
-    context: ReaderContext,
-    state: ReproLocPieceIndex.State,
-    request: Empty
-  ) {
-    // Two possible responses for there not being an object:
-    // * an error from reboot saying nothing at that index
-    // * empty string for pieceId
+  async setStatus(context: WriterContext, state: Move.State, request: SetStatusRequest) {
+    state.status = request.status;
+    return {};
+  }
+  async get(context: ReaderContext, state: Move.State, request: Empty) {
     return state;
   }
-
-  async set(
-    context: WriterContext,
-    state: ReproLocPieceIndex.State,
-    request: ReproLocPieceIndex.State
-  ) {
-    console.log("!!! set");
-    state.pieceId = request.pieceId;
-    return {};
-  }
-
 }
