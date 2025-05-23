@@ -9,9 +9,9 @@ import {
   MoveStatus,
   SetStatusRequest
 } from "../../api/repro/v1/repro_rbt.js"
+import { PartialMessage } from "@bufbuild/protobuf";
 
 export class GameServicer extends Game.Servicer {
-
   async queueMove(context: TransactionContext, state: Game.State, request: MoveRequest) {
     if (state.moves === undefined) {
       state.moves = [];
@@ -29,8 +29,8 @@ export class GameServicer extends Game.Servicer {
   }
 
   async cancelMove(context: TransactionContext, state: Game.State, request: MoveRequest) {
+    await Move.ref(request.id).get(context);
     state.moves = state.moves.filter(item => item.id !== request.id);
-    state.moveIds = state.moveIds.filter(item => item !== request.id);
     await Move.ref(request.id).setStatus(context, {
       status: MoveStatus.MOVE_CANCELED
     });
@@ -38,6 +38,7 @@ export class GameServicer extends Game.Servicer {
   }
 
   async ackMove(context: TransactionContext, state: Game.State, request: AckMoveRequest) {
+    state.moveIds = state.moveIds.filter(item => item !== request.moveId);
     await Move.ref(request.moveId).setStatus(context, { status: MoveStatus.MOVE_ACKED });
     return {};
   }
