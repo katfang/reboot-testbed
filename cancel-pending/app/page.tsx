@@ -1,68 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { MoveStatus, useGame } from "../api/repro/v1/repro_rbt_react"
 import Board from "./Board";
 import Queue from "./Queue";
 
 export default function Home() {
-  const gameRef = useGame({ id: "singleton" });
-  const moves = gameRef.useMoves();
-  const movesById = gameRef.useMovesById();
-  const [hasPendingMove, setHasPendingMove] = useState(false);
-
-  const jsonMovesById = JSON.stringify(movesById.response?.movesById);
-  console.log("moves by id", movesById);
-  useEffect(() => {
-    async function ackMoves() {
-      console.log("acking moves!");
-      if (movesById.response === undefined) {
-        return;
-      }
-      if (Object.keys(movesById.response.movesById).length > 0) {
-        for (const [moveId, move] of Object.entries(movesById.response.movesById)) {
-          if (move.status === MoveStatus.MOVE_EXECUTED || move.status === MoveStatus.MOVE_CANCELED) {
-            await gameRef.ackMove({ moveId });
-            setHasPendingMove(false);
-          }
-        }
-      }
-    }
-    ackMoves();
-  }, [jsonMovesById]);
-
-  async function queueMove(moveId: string) {
-    setHasPendingMove(true);
-    await gameRef.queueMove({ id: moveId });
-  }
-
-  async function cancelMove(moveId: string) {
-    await gameRef.cancelMove({ id: moveId });
-  }
-
-  let movesDisplay = [];
-  if (moves.response !== undefined) {
-    for (let move of moves.response?.moves) {
-      movesDisplay.push(
-        <li key={move.id}>
-          {move.id}
-        </li>
-      )
-    }
-  }
-
-  // let movesByIdDisplay = [];
-  // if (movesById.response !== undefined) {
-  //   for (const [moveId, move] of Object.entries(movesById.response.movesById)) {
-  //     movesByIdDisplay.push(
-  //       <li key={moveId}>
-  //         {moveId} - {MoveStatus[move.status]}
-  //       </li>
-  //     )
-  //   }
-  // }
-
-
   return (
     <div>
       <Board gameId="singleton" />
