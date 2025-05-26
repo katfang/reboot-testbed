@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+package cheaoss.v1;
+
+import "cheaoss/v1/cheaoss.proto";
+import "cheaoss/v1/move.proto";
+import "cheaoss/v1/piece.proto";
+import "cheaoss/v1/util.proto";
+import "rbt/v1alpha1/options.proto";
+
+message Game {
+    option (rbt.v1alpha1.state) = {};
+    cheaoss.v1.Team next_team_assignment = 1;
+    cheaoss.v1.Team next_team_to_move = 2;
+    repeated string piece_ids = 3;
+    map<string, cheaoss.v1.Team> players = 4;
+    repeated cheaoss.v1.MoveRequest white_moves_queue = 5;
+    repeated cheaoss.v1.MoveRequest black_moves_queue = 6;
+    map<string, ListOfMoves> outstanding_player_moves = 7;
+    map<string, bool> outstanding_piece_moves = 8;
+}
+
+message ListOfMoves {
+    repeated string move_ids = 1;
+}
+
+service GameMethods {
+    rpc AssignTeam(AssignTeamRequest) returns (AssignTeamResponse) {
+        option (rbt.v1alpha1.method).writer = {};
+    }
+
+    rpc InitGame(InitGameRequest) returns (cheaoss.v1.EmptyResponse) {
+        option (rbt.v1alpha1.method).transaction = {};
+    }
+
+    rpc BoardPieces(cheaoss.v1.EmptyRequest) returns (BoardPiecesResponse) {
+        option (rbt.v1alpha1.method).reader = {};
+    }
+
+    // queue a move up for the player
+    rpc QueueMove(cheaoss.v1.MoveRequest) returns (cheaoss.v1.QueueMoveResponse) {
+        option (rbt.v1alpha1.method) = {
+            transaction: {},
+            errors: [ "cheaoss.v1.InvalidMoveError" ],
+        };
+    }
+
+    rpc CancelMove(cheaoss.v1.CancelMoveRequest) returns (cheaoss.v1.EmptyResponse) {
+        option (rbt.v1alpha1.method) = {
+            transaction: {},
+            errors: [ "cheaoss.v1.MoveCannotBeCanceledError" ],
+        };
+    }
+
+    // run the queue to make moves
+    rpc RunQueue(cheaoss.v1.EmptyRequest) returns (cheaoss.v1.EmptyResponse) {
+        option (rbt.v1alpha1.method).transaction = {};
+    }
+
+    // get the queues
+    rpc Queues(cheaoss.v1.EmptyRequest) returns (QueuesResponse) {
+        option (rbt.v1alpha1.method).reader = {};
+    }
+
+    // for a given player, return the moves they have
+    rpc GetOutstandingMoves(GetOutstandingMovesRequest) returns (GetOutstandingMovesResponse) {
+        option (rbt.v1alpha1.method).reader = {};
+    }
+
+    // player acknowledges a move
+    rpc AckMove(AckMoveRequest) returns (cheaoss.v1.EmptyResponse) {
+        option (rbt.v1alpha1.method).transaction = {};
+    }
+}
+
+message AssignTeamRequest {
+    string player_id = 1;
+}
+
+message AssignTeamResponse {
+    cheaoss.v1.Team team = 1;
+}
+
+message InitGameRequest {}
+
+message BoardPiecesResponse {
+    map<string, cheaoss.v1.Piece> pieces = 1;
+}
+
+message QueueMoveResponse {
+    string move_id = 1;
+}
+
+message CancelMoveRequest {
+    string move_id = 1;
+}
+
+message QueuesResponse {
+    repeated cheaoss.v1.MoveRequest white_moves_queue = 1;
+    repeated cheaoss.v1.MoveRequest black_moves_queue = 2;
+}
+
+message GetOutstandingMovesRequest {
+    string player_id = 1;
+}
+
+message GetOutstandingMovesResponse {
+    map<string, cheaoss.v1.Move> moves = 1;
+}
+
+message AckMoveRequest {
+    string move_id = 1;
+    string player_id = 2;
+}

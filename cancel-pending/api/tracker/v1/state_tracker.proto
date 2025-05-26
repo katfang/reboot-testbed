@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package tracker.v1;
+
+import "rbt/v1alpha1/options.proto";
+import "google/protobuf/empty.proto";
+
+message StateTracker {
+    option (rbt.v1alpha1.state) = {};
+    map<string, ListOfIds> tracked = 1;
+}
+
+message ListOfIds {
+    repeated string ids = 1;
+}
+
+service StateTrackerMethods {
+    rpc Get(google.protobuf.Empty) returns (tracker.v1.StateTracker) {
+        option (rbt.v1alpha1.method).writer = {};
+    }
+
+    rpc Track(TrackRequest) returns (google.protobuf.Empty) {
+        option (rbt.v1alpha1.method).writer = {};
+    }
+
+    rpc ClearAll(google.protobuf.Empty) returns (google.protobuf.Empty) {
+        option (rbt.v1alpha1.method).writer = {};
+    }
+
+}
+
+message TrackRequest {
+    string key = 1;
+    repeated string to_track =2;
+}

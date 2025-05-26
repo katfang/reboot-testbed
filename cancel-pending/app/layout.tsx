@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Repro",
-  description: "Repros",
+  title: "Cheaoss",
+  description: "Chess with more Chaos added",
 };
 
 export default function RootLayout({
