@@ -34,6 +34,7 @@ const BACK_ROW: PieceType[] = [
   PieceType.ROOK,
   PieceType.KNIGHT,
 ];
+// REPRO: if PIECES_PER_TEAM = 1, this works as expected.
 const PIECES_PER_TEAM = 2;
 
 function pieceId(gameId: string, team: Team, index: number, pieceType: PieceType): string {
@@ -205,15 +206,6 @@ export class GameServicer extends Game.Servicer {
           message: "Move requests must have a start and an end"
         })
       )
-    }
-
-    // Chess logic checks
-    if (state.players[request.playerId] !== piece.team) {
-      throw new Game.QueueMoveAborted(
-        new InvalidMoveError({
-          message: "You can only move your team's pieces."
-        })
-      );
     } else if (piece.loc?.row !== request.start.row || piece.loc?.col !== request.start.col) {
         throw new Game.QueueMoveAborted(
           new InvalidMoveError({
@@ -243,12 +235,11 @@ export class GameServicer extends Game.Servicer {
     )
 
     // queue the move
-    if (state.players[request.playerId] == Team.WHITE) {
+    if (piece.team == Team.WHITE) {
       state.whiteMovesQueue.push(request);
-    } else if (state.players[request.playerId] == Team.BLACK) {
+    } else if (piece.team == Team.BLACK) {
       state.blackMovesQueue.push(request);
     }
-
 
     // update the indices
     state.outstandingPieceMoves[request.pieceId] = true;
@@ -301,16 +292,12 @@ export class GameServicer extends Game.Servicer {
     delete state.outstandingPieceMoves[pieceId];
 
     // remove from queue
-    let team = state.players[playerId];
-    if (team === Team.WHITE) {
-      state.whiteMovesQueue = state.whiteMovesQueue.filter(qMove =>
-        qMove.playerId !== playerId || qMove.pieceId !== pieceId
-      );
-    } else {
-      state.blackMovesQueue = state.blackMovesQueue.filter(qMove =>
-        qMove.playerId !== playerId || qMove.pieceId !== pieceId
-      );
-    }
+    state.whiteMovesQueue = state.whiteMovesQueue.filter(qMove =>
+      qMove.playerId !== playerId || qMove.pieceId !== pieceId
+    );
+    state.blackMovesQueue = state.blackMovesQueue.filter(qMove =>
+      qMove.playerId !== playerId || qMove.pieceId !== pieceId
+    );
 
     // mark move as canceled
     await Move.ref(request.moveId).setStatus(context, {

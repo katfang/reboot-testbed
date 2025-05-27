@@ -31,7 +31,6 @@ export default function CheaossQueues({
   for (let move of queues.response.whiteMovesQueue) {
     whiteMoves.push(
       <li key={move.playerId + "-" + move.pieceId}>
-        {move.playerId} -
         ({move.start?.row}, {move.start?.col}) -
         ({move.end?.row} , {move.end?.col})
         [<a href="#" onClick={() => cancelMove(move.playerId + "-" + move.pieceId)}>Cancel</a>]
@@ -43,7 +42,6 @@ export default function CheaossQueues({
   for (let move of queues.response.blackMovesQueue) {
     blackMoves.push(
       <li key={move.playerId}>
-        {move.playerId} -
         ({move.start?.row}, {move.start?.col}) -
         ({move.end?.row} , {move.end?.col})
         [<a href="#" onClick={() => cancelMove(move.playerId + "-" + move.pieceId)}>Cancel</a>]
