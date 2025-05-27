@@ -29,11 +29,6 @@ import { Team } from "../../api/cheaoss/v1/cheaoss_pb.js";
 import { validateMovementPattern } from "./piece_servicer.js";
 import { errors_pb } from "@reboot-dev/reboot-api";
 
-const BOARD_SIZE = 1;
-const BACK_ROW: PieceType[] = [
-  PieceType.ROOK,
-  PieceType.KNIGHT,
-];
 // REPRO: if PIECES_PER_TEAM = 1, this works as expected.
 const PIECES_PER_TEAM = 2;
 
@@ -92,11 +87,7 @@ export class GameServicer extends Game.Servicer {
   ) {
     let keysList: string[][] = [];
     // make the new subboard
-    for (let boardRow: number = 0; boardRow < BOARD_SIZE; boardRow++) {
-      for (let boardCol: number = 0; boardCol < BOARD_SIZE; boardCol++) {
-        keysList.push(await this.makeInitialBoardPieces(context, context.stateId));
-      }
-    }
+    keysList.push(await this.makeInitialBoardPieces(context, context.stateId));
 
     state.pieceIds = keysList.flat();
     state.players = {};
@@ -159,7 +150,6 @@ export class GameServicer extends Game.Servicer {
     // TODO: is there a way to create this
     // const pieces = new Map<string, PieceMessage>();
 
-    let keysList: string[][] = [];
     // make the new subboard
     for (const pieceId of state.pieceIds) {
       response.pieces[pieceId] = await Piece.ref(pieceId).piece(context);
