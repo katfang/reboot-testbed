@@ -30,7 +30,7 @@ import { validateMovementPattern } from "./piece_servicer.js";
 import { errors_pb } from "@reboot-dev/reboot-api";
 
 // REPRO: if PIECES_PER_TEAM = 1, this works as expected.
-const PIECES_PER_TEAM = 2;
+const PIECES_PER_TEAM = 3;
 
 function pieceId(gameId: string, team: Team, index: number, pieceType: PieceType): string {
   let teamStr = "u"; // Unknown
