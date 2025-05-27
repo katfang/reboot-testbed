@@ -106,25 +106,38 @@ export class GameServicer extends Game.Servicer {
     state: Game.State,
     request: InitGameRequest
   ) {
-    let keysList: string[][] = [];
-    let locIds: string[] = [];
-    // make the new subboard
-    for (let boardRow: number = 0; boardRow < BOARD_SIZE; boardRow++) {
-      for (let boardCol: number = 0; boardCol < BOARD_SIZE; boardCol++) {
-        keysList.push(await this.makeInitialBoardPieces(context, context.stateId, boardRow*8, boardCol*8));
+    // add only two pawns
+    await Piece.ref(pieceId(context.stateId, Team.WHITE, 0, 0, 0, PieceType.PAWN))
+      .idempotently()
+      .makePiece(
+        context,
+        new Piece.State({
+          team: Team.WHITE,
+          type: PieceType.PAWN,
+          loc: {
+            row: 0,
+            col: 0
+          }
+        })
+      );
+    await Piece.ref(pieceId(context.stateId, Team.BLACK, 0, 0, 1, PieceType.PAWN))
+      .idempotently()
+      .makePiece(
+        context,
+        new Piece.State({
+          team: Team.BLACK,
+          type: PieceType.PAWN,
+          loc: {
+            row: 1,
+            col: 1
+          }
+        })
+      );
 
-        for (let i = 0; i < BACK_ROW.length; i++) {
-          locIds.push(
-            pieceToLocId(context.stateId, boardRow*8, boardCol*8 + i), // white back row
-            pieceToLocId(context.stateId, boardRow*8 + 1, boardCol*8 + i), // white pawn
-            pieceToLocId(context.stateId, boardRow*8 + 8-1, boardCol*8 + i), // black back row
-            pieceToLocId(context.stateId, boardRow*8 + 8-2, boardCol*8 + i), // black pawn
-          );
-        }
-      }
-    }
-
-    state.pieceIds = keysList.flat();
+    state.pieceIds = [
+      pieceId(context.stateId, Team.WHITE, 0, 0, 0, PieceType.PAWN),
+      pieceId(context.stateId, Team.BLACK, 0, 0, 1, PieceType.PAWN)
+    ];
     state.players = {};
     state.nextTeamAssignment = Team.WHITE;
     state.nextTeamToMove = Team.WHITE;
@@ -136,69 +149,6 @@ export class GameServicer extends Game.Servicer {
     return {};
   }
 
-  async makeInitialBoardPieces(
-    context: TransactionContext,
-    stateId: string,
-    startingRow: number,
-    startingCol: number,
-  ) {
-    for (const [index, item] of BACK_ROW.entries()) {
-      await Piece.ref(pieceId(stateId, Team.WHITE, startingRow, startingCol, index, item))
-        .idempotently()
-        .makePiece(
-          context,
-          new Piece.State({
-            team: Team.WHITE,
-            type: item,
-            loc: {
-              row: startingRow,
-              col: startingCol+index
-            }
-          })
-        );
-      await Piece.ref(pieceId(stateId, Team.WHITE, startingRow, startingCol, index, PieceType.PAWN))
-        .idempotently()
-        .makePiece(
-          context,
-          new Piece.State({
-            team: Team.WHITE,
-            type: PieceType.PAWN,
-            loc: {
-              row: startingRow+1,
-              col: startingCol+index
-            }
-          })
-        );
-      await Piece.ref(pieceId(stateId, Team.BLACK, startingRow, startingCol, index, item))
-        .idempotently()
-        .makePiece(
-          context,
-          new Piece.State({
-            team: Team.BLACK,
-            type: item,
-            loc: {
-              row: startingRow+8-1,
-              col: startingCol+index
-            }
-          })
-        );
-      await Piece.ref(pieceId(stateId, Team.BLACK, startingRow, startingCol, index, PieceType.PAWN))
-        .idempotently()
-        .makePiece(
-          context,
-          new Piece.State({
-            team: Team.BLACK,
-            type: PieceType.PAWN,
-            loc: {
-              row: startingRow+8-2,
-              col: startingCol+index
-            }
-          })
-        );
-    }
-    return pieceIds(stateId, startingRow, startingCol);
-  }
-
   async boardPieces(
     context: ReaderContext,
     state: Game.State,
@@ -208,15 +158,8 @@ export class GameServicer extends Game.Servicer {
     // TODO: is there a way to create this
     // const pieces = new Map<string, PieceMessage>();
 
-    let keysList: string[][] = [];
-    // make the new subboard
-    for (let boardRow: number = 0; boardRow < BOARD_SIZE; boardRow++) {
-      for (let boardCol: number = 0; boardCol < BOARD_SIZE; boardCol++) {
-        const subboardPieceIds = pieceIds(context.stateId, boardRow, boardCol);
-        for (const subboardPieceId of subboardPieceIds) {
-          response.pieces[subboardPieceId] = await Piece.ref(subboardPieceId).piece(context);
-        }
-      }
+    for (const pieceId of state.pieceIds) {
+      response.pieces[pieceId] = await Piece.ref(pieceId).piece(context);
     }
     return response;
   }
