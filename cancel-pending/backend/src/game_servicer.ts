@@ -93,8 +93,7 @@ export class GameServicer extends Game.Servicer {
     state.players = {};
     state.nextTeamAssignment = Team.WHITE;
     state.nextTeamToMove = Team.WHITE;
-    state.whiteMovesQueue = [];
-    state.blackMovesQueue = [];
+    state.movesQueue = [];
     state.outstandingPlayerMoves = {};
     state.outstandingPieceMoves = {};
 
@@ -218,11 +217,7 @@ export class GameServicer extends Game.Servicer {
     )
 
     // queue the move
-    if (piece.team == Team.WHITE) {
-      state.whiteMovesQueue.push(request);
-    } else if (piece.team == Team.BLACK) {
-      state.blackMovesQueue.push(request);
-    }
+    state.movesQueue.push(request);
 
     // update the indices
     state.outstandingPieceMoves[request.pieceId] = true;
@@ -273,10 +268,7 @@ export class GameServicer extends Game.Servicer {
     delete state.outstandingPieceMoves[pieceId];
 
     // remove from queue
-    state.whiteMovesQueue = state.whiteMovesQueue.filter(qMove =>
-      qMove.playerId !== playerId || qMove.pieceId !== pieceId
-    );
-    state.blackMovesQueue = state.blackMovesQueue.filter(qMove =>
+    state.movesQueue = state.movesQueue.filter(qMove =>
       qMove.playerId !== playerId || qMove.pieceId !== pieceId
     );
 
@@ -294,8 +286,7 @@ export class GameServicer extends Game.Servicer {
     request: EmptyRequest
   ) {
     return {
-      whiteMovesQueue: state.whiteMovesQueue,
-      blackMovesQueue: state.blackMovesQueue
+      movesQueue: state.movesQueue,
     }
   }
 

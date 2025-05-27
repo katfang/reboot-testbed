@@ -27,9 +27,9 @@ export default function CheaossQueues({
 
   console.log("pending cancel moves", cheaossRef.cancelMove.pending);
 
-  let whiteMoves = [];
-  for (let move of queues.response.whiteMovesQueue) {
-    whiteMoves.push(
+  let moves = [];
+  for (let move of queues.response.movesQueue) {
+    moves.push(
       <li key={move.playerId + "-" + move.pieceId}>
         ({move.start?.row}, {move.start?.col}) -
         ({move.end?.row} , {move.end?.col})
@@ -38,31 +38,12 @@ export default function CheaossQueues({
     )
   }
 
-  let blackMoves = [];
-  for (let move of queues.response.blackMovesQueue) {
-    blackMoves.push(
-      <li key={move.playerId}>
-        ({move.start?.row}, {move.start?.col}) -
-        ({move.end?.row} , {move.end?.col})
-        [<a href="#" onClick={() => cancelMove(move.playerId + "-" + move.pieceId)}>Cancel</a>]
-      </li>
-    )
-  }
-
   return (
-    <div className="w-full h-full grid grid-cols-2 gap-4 text-center">
-      <div className="w-full h-full bg-mid-square text-white-piece p-2">
-        <h1>Pending White Moves</h1>
-        <ul>
-          {whiteMoves}
-        </ul>
-      </div>
-      <div className="w-full h-full bg-mid-square text-black-piece p-2">
-        <h1>Pending Black Moves</h1>
-        <ul>
-          {blackMoves}
-        </ul>
-      </div>
+    <div className="w-full h-full bg-mid-square text-white-piece p-2">
+      <h1>Pending Moves</h1>
+      <ul>
+        {moves}
+      </ul>
     </div>
   );
 }

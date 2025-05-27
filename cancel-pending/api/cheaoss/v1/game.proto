@@ -14,10 +14,9 @@ message Game {
     cheaoss.v1.Team next_team_to_move = 2;
     repeated string piece_ids = 3;
     map<string, cheaoss.v1.Team> players = 4;
-    repeated cheaoss.v1.MoveRequest white_moves_queue = 5;
-    repeated cheaoss.v1.MoveRequest black_moves_queue = 6;
-    map<string, ListOfMoves> outstanding_player_moves = 7;
-    map<string, bool> outstanding_piece_moves = 8;
+    repeated cheaoss.v1.MoveRequest moves_queue = 5;
+    map<string, ListOfMoves> outstanding_player_moves = 6;
+    map<string, bool> outstanding_piece_moves = 7;
 }
 
 message ListOfMoves {
@@ -91,8 +90,7 @@ message CancelMoveRequest {
 }
 
 message QueuesResponse {
-    repeated cheaoss.v1.MoveRequest white_moves_queue = 1;
-    repeated cheaoss.v1.MoveRequest black_moves_queue = 2;
+    repeated cheaoss.v1.MoveRequest moves_queue = 1;
 }
 
 message GetOutstandingMovesRequest {
