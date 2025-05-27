@@ -52,11 +52,6 @@ service GameMethods {
         };
     }
 
-    // run the queue to make moves
-    rpc RunQueue(cheaoss.v1.EmptyRequest) returns (cheaoss.v1.EmptyResponse) {
-        option (rbt.v1alpha1.method).transaction = {};
-    }
-
     // get the queues
     rpc Queues(cheaoss.v1.EmptyRequest) returns (QueuesResponse) {
         option (rbt.v1alpha1.method).reader = {};

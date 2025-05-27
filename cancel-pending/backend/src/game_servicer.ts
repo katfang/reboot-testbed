@@ -212,13 +212,6 @@ export class GameServicer extends Game.Servicer {
             message: "That piece isn't there anymore."
           })
         );
-    } else {
-      const pieceToCheck = new Piece.State();
-      pieceToCheck.copyFrom(piece); // TODO: some left over troubles from the fact I called it PieceMethod.Piece & have a message caleld Piece
-      const check = validateMovementPattern(pieceToCheck, request.start, request.end);
-      if (check instanceof InvalidMoveError) {
-        throw new Game.QueueMoveAborted(check);
-      }
     }
 
     // store the move
@@ -248,8 +241,6 @@ export class GameServicer extends Game.Servicer {
     } else {
       state.outstandingPlayerMoves[request.playerId] = new ListOfMoves({ moveIds: [moveId] });;
     }
-
-    await this.ref().schedule().runQueue(context);
 
     return { moveId: moveId };
   }
@@ -303,64 +294,6 @@ export class GameServicer extends Game.Servicer {
     await Move.ref(request.moveId).setStatus(context, {
       status: MoveStatus.MOVE_CANCELED,
     });
-
-    return {};
-  }
-
-  async runQueue(
-    context: TransactionContext,
-    state: Game.State,
-    request: EmptyRequest
-  ) {
-    // TODO: check if this works. We're trying to grab the queue
-    const queue = (state.nextTeamToMove === Team.WHITE) ? state.whiteMovesQueue : state.blackMovesQueue;
-
-    // If there is no next move to make, get out of here
-    if (queue.length === 0) {
-      return {};
-    }
-
-    // take the move and make it
-    let move = queue.shift();
-    if (move === undefined) { return {}; } // not possible since length > 0, but making the wiggly lines happy
-
-    // TODO(reboot-dev/reboot#28): workaround for throwing errors on invalid chess moves
-    let moveResult = await Piece.ref(move.pieceId).idempotently().movePieceWorkaround(context, move);
-
-    // if the move succeeds, change which team gets to play, and mark move as executed.
-    if (moveResult.invalidMove === undefined) {
-      // flip the team who can play
-      state.nextTeamToMove = flipTeam(state.nextTeamToMove);
-
-      // remove from indices
-      // DO NOT remove from player index: AckMove will do that instead b/c we need to make sure the client knows the move has been executed or errored.
-      delete state.outstandingPieceMoves[move.pieceId];
-      await Move.ref(`${move.playerId}-${move.pieceId}`)
-        .idempotently()
-        .setStatus(context, { status: MoveStatus.MOVE_EXECUTED });
-
-    } else {
-      // invalid chess move, delete the outstanding move and mark as error
-      delete state.outstandingPieceMoves[move.pieceId];
-      await Move.ref(`${move.playerId}-${move.pieceId}`)
-        .idempotently()
-        .setStatus(
-          context,
-          {
-            status: MoveStatus.MOVE_ERRORED,
-            error: moveResult.invalidMove.message
-          }
-        );
-    }
-
-
-    // check if there's more moves to run, if so, run the queue in half a second
-    const otherQueue = (state.nextTeamToMove === Team.WHITE) ? state.whiteMovesQueue : state.blackMovesQueue;
-    if (otherQueue.length > 0) {
-      await this.ref().schedule({
-        when: new Date(Date.now() + 500)
-      }).runQueue(context);
-    }
 
     return {};
   }
