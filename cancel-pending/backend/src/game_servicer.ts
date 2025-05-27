@@ -27,7 +27,6 @@ import {
 import { EmptyRequest } from "../../api/cheaoss/v1/util_pb.js"
 import { Team } from "../../api/cheaoss/v1/cheaoss_pb.js";
 import { pieceToLocId, validateMovementPattern } from "./piece_servicer.js";
-import { StateTracker } from "../../api/tracker/v1/state_tracker_rbt.js";
 import { LocPieceIndex } from "../../api/cheaoss/v1/piece_rbt.js";
 import { errors_pb } from "@reboot-dev/reboot-api";
 
@@ -107,11 +106,6 @@ export class GameServicer extends Game.Servicer {
     state: Game.State,
     request: InitGameRequest
   ) {
-    // TODO(reboot-dev/reboot#30) workaround: would consider tearDown for its own transaction
-    // but that would case nested transaction errors, so it's just an internal method.
-    this.tearDownForInitGame(context, state, BOARD_SIZE);
-
-
     let keysList: string[][] = [];
     let locIds: string[] = [];
     // make the new subboard
@@ -129,10 +123,6 @@ export class GameServicer extends Game.Servicer {
         }
       }
     }
-    await StateTracker.ref(context.stateId).track(context, {
-      key: "LocPieceIndex",
-      toTrack: locIds
-    });
 
     state.pieceIds = keysList.flat();
     state.players = {};
@@ -142,42 +132,6 @@ export class GameServicer extends Game.Servicer {
     state.blackMovesQueue = [];
     state.outstandingPlayerMoves = {};
     state.outstandingPieceMoves = {};
-
-    return {};
-  }
-
-  async tearDownForInitGame(
-    context: TransactionContext,
-    state: Game.State,
-    boardSize: number
-  ) {
-    // This would have been a separate method you could call, but because of the way StateTracker is set up,
-    // and wants to be accessed by both TearDown and InitGame, it's a helper method to avoid reboot-dev/reboot#30
-    let stateTracker = StateTracker.ref(context.stateId);
-    // Get tracked state to clear
-    let stateTracked = await stateTracker.get(context);
-    if ("LocPieceIndex" in stateTracked.tracked) {
-      let locIds = stateTracked.tracked["LocPieceIndex"].ids;
-      for (const locId of locIds) {
-        let locPieces = locId.split("-");
-        let locRow = parseInt(locPieces[1]);
-
-        // TODO(reboot-dev/reboot#30) workaround: only clear locations
-        // that are not initialized to avoid nested transaction error
-        if (locRow % 8 !== 0 && locRow % 8 !== 1 && locRow % 8 !== 7 && locRow % 7 !== 6) {
-          await LocPieceIndex.ref(locId).clear(context);
-        }
-      }
-    }
-    if ("Move" in stateTracked.tracked) {
-      let moveIds = stateTracked.tracked["Move"].ids;
-      for (const moveId of moveIds) {
-        await Move.ref(moveId).clear(context);
-      }
-    }
-
-    // Clear tracked state
-    await stateTracker.clearAll(context);
 
     return {};
   }
@@ -341,13 +295,6 @@ export class GameServicer extends Game.Servicer {
         status: MoveStatus.MOVE_QUEUED
       }
     )
-    await StateTracker.ref(context.stateId).track(
-      context,
-      {
-        key: "Move",
-        toTrack: [moveId]
-      }
-    );
 
     // queue the move
     if (state.players[request.playerId] == Team.WHITE) {

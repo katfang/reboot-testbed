@@ -16,7 +16,6 @@ import {
 import { EmptyRequest } from "../../api/cheaoss/v1/util_pb.js"
 import { Team } from "../../api/cheaoss/v1/cheaoss_pb.js";
 import { assert } from "console";
-import { StateTracker } from "../../api/tracker/v1/state_tracker_rbt.js";
 
 export class PieceServicer extends Piece.Servicer {
   async makePiece(
@@ -119,16 +118,6 @@ export class PieceServicer extends Piece.Servicer {
         // don't need to update index b/c we've put a new piece into that location
         // but we do want to remove location info on the removed piece itself.
         await Piece.ref(oldPieceAtLoc.pieceId).removeNoIndexUpdate(context);
-      } {
-        // if there wasn't a piece at the location before, then we might not have seen it before. StateTracker it.
-        await StateTracker.ref(pieceToGameId(context.stateId)).track(
-          context,
-          {
-            key: "LocPieceIndex",
-            toTrack: [newLocId]
-
-          }
-        );
       }
 
       // if castling, move the rook as well.
