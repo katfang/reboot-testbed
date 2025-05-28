@@ -25,7 +25,7 @@ export default function CheaossQueues({
     }
   }
 
-  console.log("pending cancel moves", cheaossRef.cancelMove.pending);
+  console.log(new Date().toLocaleString(), "pending cancel moves", cheaossRef.cancelMove.pending);
 
   let moves = [];
   for (let move of queues.response.movesQueue) {

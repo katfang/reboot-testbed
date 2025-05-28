@@ -25,14 +25,9 @@ npm install
         ```
     2. when pending cancel moves clears, will see in outstanding moves
         ```
-        outstanding moves
-            Object { response: {…}, isLoading: false, aborted: undefined }
-                aborted: undefined
-                isLoading: false
-                response: Object { moves: {…} }
-                moves: Object { "playerA-singleton-b-p4":
-                    { playerId: "playerA", pieceId: "singleton-b-p4", status: 1, … }
-                }
+        outstanding moves { "playerA-singleton-b-p4":
+            { playerId: "playerA", pieceId: "singleton-b-p4", status: 1, … }
+        }
         ```
     3. Notably, `status: 1` means the client still sees this as a PENDING move rather than a CANCELED move. (`MoveStatus` defined in `api/cheaoss/v1/move.proto`)
     4. The terminal running the backend reads:
@@ -80,6 +75,7 @@ npm install
     1. 9533f531a75e3d35808ff5586d1468c1f9f3dbb5 -- merged two repeated fields in the message into one.
     1. 33b2807e8d0ac6545929173e22846fdcdbdb8f1f / aa995bbbdfead225c56fd7c9eda2002059df69bd -- removed frontend call to AssignTeam, and then later removed the AssignTeam backend code. Removing the frontend call seemed to increase amount of calls necessary to repro the problem (at 4 pawns per team). Removing backend code didn't seem to add much more to inconsistenty. Both consistently repro'd at 5 pawns per team.
 4. This example expects ONE client b/c the playerID is coded. If you do run with 2 browsers, someone generally does ack the move (though possibly not the client that had the pending visuals).
+    1. You can enable different ids per browser tab by uncommenting
 
 ## Files of interest
  * `api/cheaoss/v1/game.proto`, `move.proto`, `piece.proto` -- definitions of states and servicers.

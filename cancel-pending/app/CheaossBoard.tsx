@@ -24,10 +24,10 @@ export default function CheaossBoard({
 
   // This has to happen first due to hooks having to be run first
   const jsonOutstandingMoves = JSON.stringify(outstandingMoves.response?.moves);
-  console.log("outstanding moves", outstandingMoves);
+  console.log(new Date().toLocaleString(), "outstanding moves", outstandingMoves.response ? outstandingMoves.response.moves : null);
   useEffect(() => {
     async function ackMoves() {
-      console.log("acking moves!", outstandingMoves.response);
+      console.log(new Date().toLocaleString(), "acking moves!", outstandingMoves.response);
       if (outstandingMoves.response === undefined ) {
         return;
       }
