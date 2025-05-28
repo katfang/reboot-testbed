@@ -52,12 +52,6 @@ function pieceId(gameId: string, team: Team, index: number, pieceType: PieceType
   }
 }
 
-function flipTeam(team: Team): Team {
-  if (team === Team.WHITE) return Team.BLACK;
-  else if (team === Team.BLACK) return Team.WHITE;
-  else return Team.TEAM_UNKNOWN;
-}
-
 export class GameServicer extends Game.Servicer {
 
   async initGame(
