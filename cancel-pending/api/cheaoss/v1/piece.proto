@@ -40,25 +40,3 @@ service PieceMethods {
         option (rbt.v1alpha1.method).reader = {};
     }
 }
-
-// Maps gameid-row-col --> pieceid
-message LocPieceIndex {
-    option (rbt.v1alpha1.state) = {};
-    string piece_id = 1;
-}
-
-service LocPieceIndexMethods {
-    rpc Get(cheaoss.v1.EmptyRequest) returns (cheaoss.v1.LocPieceIndex) {
-        // TODO(reboot-dev/reboot#28) Workaround for gets aborting if state is non-existent
-        option (rbt.v1alpha1.method).writer = {};
-    }
-
-    // Returns the old pieceId that was there, if any
-    rpc Set(cheaoss.v1.LocPieceIndex) returns (cheaoss.v1.LocPieceIndex) {
-        option (rbt.v1alpha1.method).writer = {};
-    }
-
-    rpc Clear(cheaoss.v1.EmptyRequest) returns (cheaoss.v1.EmptyResponse) {
-        option (rbt.v1alpha1.method).writer = {};
-    }
-}
