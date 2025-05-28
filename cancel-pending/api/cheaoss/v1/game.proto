@@ -24,10 +24,6 @@ message ListOfMoves {
 }
 
 service GameMethods {
-    rpc AssignTeam(AssignTeamRequest) returns (AssignTeamResponse) {
-        option (rbt.v1alpha1.method).writer = {};
-    }
-
     rpc InitGame(InitGameRequest) returns (cheaoss.v1.EmptyResponse) {
         option (rbt.v1alpha1.method).transaction = {};
     }
@@ -65,14 +61,6 @@ service GameMethods {
     rpc AckMove(AckMoveRequest) returns (cheaoss.v1.EmptyResponse) {
         option (rbt.v1alpha1.method).transaction = {};
     }
-}
-
-message AssignTeamRequest {
-    string player_id = 1;
-}
-
-message AssignTeamResponse {
-    cheaoss.v1.Team team = 1;
 }
 
 message InitGameRequest {}

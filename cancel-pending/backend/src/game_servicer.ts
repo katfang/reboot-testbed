@@ -2,7 +2,6 @@ import { ReaderContext, TransactionContext, WriterContext } from "@reboot-dev/re
 
 import {
   AckMoveRequest,
-  AssignTeamRequest,
   BoardPiecesResponse,
   CancelMoveRequest,
   Game,
@@ -30,7 +29,7 @@ import { validateMovementPattern } from "./piece_servicer.js";
 import { errors_pb } from "@reboot-dev/reboot-api";
 
 // REPRO: if PIECES_PER_TEAM = 1, this works as expected.
-const PIECES_PER_TEAM = 3;
+const PIECES_PER_TEAM = 4;
 
 function pieceId(gameId: string, team: Team, index: number, pieceType: PieceType): string {
   let teamStr = "u"; // Unknown
@@ -61,24 +60,6 @@ function flipTeam(team: Team): Team {
 }
 
 export class GameServicer extends Game.Servicer {
-
-  async assignTeam(
-    context: WriterContext,
-    state: Game.State,
-    request: AssignTeamRequest
-  ) {
-    // if we've seen the player before, return their existing team
-    if (state.players[request.playerId] !== undefined) {
-      return { team: state.players[request.playerId] };
-    }
-
-    // assume that init game has been run
-    // TODO: possibly should throw an error if we ever have unknown team
-    const team = state.nextTeamAssignment;
-    state.nextTeamAssignment = flipTeam(team);
-    state.players[request.playerId] = team;
-    return { team: team };
-  }
 
   async initGame(
     context: TransactionContext,
