@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 
-import CheaossMeta from "./CheaossMeta";
 import CheaossBoard from "./CheaossBoard";
 import CheaossQueues from "./CheaossQueues";
 
@@ -25,9 +24,6 @@ export default function Home() {
 
   return (
     <div className="grid grid-cols-[auto_1fr] grid-rows-[auto_1fr] min-h-screen gap-4 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <div className="w-full col-span-2 bg-gray-500 p-4">
-        <CheaossMeta gameId="singleton" playerId={playerId} />
-      </div>
       <div className="w-full h-full bg-gray-500 p-4">
         <CheaossBoard gameId="singleton" playerId={playerId} />
       </div>
