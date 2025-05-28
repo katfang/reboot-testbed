@@ -39,33 +39,6 @@ service PieceMethods {
     rpc Piece(cheaoss.v1.EmptyRequest) returns (cheaoss.v1.Piece) {
         option (rbt.v1alpha1.method).reader = {};
     }
-
-    rpc MovePieceWorkaround(cheaoss.v1.MoveRequest) returns (MovePieceWorkaroundResponse) {
-        option (rbt.v1alpha1.method).transaction = {};
-    }
-
-    rpc MovePiece(cheaoss.v1.MoveRequest) returns (cheaoss.v1.EmptyResponse) {
-        option (rbt.v1alpha1.method) = {
-            transaction: {},
-            errors: [ "cheaoss.v1.InvalidMoveError" ],
-        };
-    }
-
-    rpc Remove(cheaoss.v1.EmptyRequest) returns (cheaoss.v1.EmptyResponse) {
-        option (rbt.v1alpha1.method).transaction = {};
-    }
-
-    rpc MovePieceNoIndexUpdate(cheaoss.v1.Location) returns (cheaoss.v1.Location) {
-        option (rbt.v1alpha1.method).writer = {};
-    }
-
-    rpc RemoveNoIndexUpdate(cheaoss.v1.EmptyRequest) returns (cheaoss.v1.Location) {
-        option (rbt.v1alpha1.method).writer = {};
-    }
-}
-
-message MovePieceWorkaroundResponse {
-    InvalidMoveError invalid_move = 1;
 }
 
 // Maps gameid-row-col --> pieceid

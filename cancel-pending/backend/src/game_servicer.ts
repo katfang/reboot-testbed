@@ -25,11 +25,10 @@ import {
 
 import { EmptyRequest } from "../../api/cheaoss/v1/util_pb.js"
 import { Team } from "../../api/cheaoss/v1/cheaoss_pb.js";
-import { validateMovementPattern } from "./piece_servicer.js";
 import { errors_pb } from "@reboot-dev/reboot-api";
 
 // REPRO: if PIECES_PER_TEAM = 1, this works as expected.
-const PIECES_PER_TEAM = 4;
+const PIECES_PER_TEAM = 5;
 
 function pieceId(gameId: string, team: Team, index: number, pieceType: PieceType): string {
   let teamStr = "u"; // Unknown
