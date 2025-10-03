@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package inside.v1;
+
+import "rbt/v1alpha1/options.proto";
+
+message Inside {
+  option (rbt.v1alpha1.state) = {};
+  repeated string items = 1;
+}
+
+service InsideMethods {
+  rpc ListAll(InsideListRequest) returns (InsideListResponse) {
+    option (rbt.v1alpha1.method).reader = {};
+  }
+
+  rpc Add(InsideAddRequest) returns (InsideAddResponse) {
+    option (rbt.v1alpha1.method).writer = {};
+  }
+}
+
+message InsideListRequest {}
+
+message InsideListResponse {
+  repeated string items = 1;
+}
+
+message InsideAddRequest {
+  string item = 1;
+}
+
+message InsideAddResponse {}
+
+
+

@@ -1,0 +1,7 @@
+generate api/
+generate --python=backend/api/
+
+dev run --name=authz-playground
+dev run --watch=backend/src/**/*.py
+dev run --python
+dev run --application=backend/src/main.py

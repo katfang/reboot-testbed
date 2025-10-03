@@ -1,0 +1,11 @@
+# reboot cli
+/.rbt/
+
+# venv directory
+/.venv/
+
+# temp directories
+__pycache__/
+
+# generated code
+/backend/api/
