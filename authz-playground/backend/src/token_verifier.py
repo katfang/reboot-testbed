@@ -16,6 +16,6 @@ class TokenVerifier(token_verifiers.TokenVerifier):
             # service.
             user_id=None,
             properties={
-                "SCOPE": "global",
+                "SCOPE": token 
             },
         )

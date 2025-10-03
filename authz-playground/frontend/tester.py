@@ -8,7 +8,7 @@ from inside.v1.inside_rbt import Inside
 from rebootdev.aio.external import ExternalContext
 
 async def tester():
-    token = "i-am-a-token"
+    token = "inside"
 
     context = ExternalContext(
         name="send message",
