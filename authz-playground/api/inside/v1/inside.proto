@@ -17,6 +17,10 @@ service InsideMethods {
   rpc Add(InsideAddRequest) returns (InsideAddResponse) {
     option (rbt.v1alpha1.method).writer = {};
   }
+
+  rpc Clear(InsideClearRequest) returns (InsideClearResponse) {
+    option (rbt.v1alpha1.method).writer = {};
+  }
 }
 
 message InsideListRequest {}
@@ -31,5 +35,5 @@ message InsideAddRequest {
 
 message InsideAddResponse {}
 
-
-
+message InsideClearRequest {}
+message InsideClearResponse {}

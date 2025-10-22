@@ -10,15 +10,17 @@ from rebootdev.aio.external import ExternalContext
 
 
 async def tester():
-    token = "inside"
+    token = "bob"
 
     context = ExternalContext(
         name="send message", url="http://localhost:9991", bearer_token=token
     )
 
-    inside = Inside.ref("inside-instance")
+    inside = Inside.ref("mine-second")
 
-    response = await inside.add(context, item="second item")
+    # response = await inside.add(context, item="second item")
+
+    response = await inside.add(context, item="an item")
 
     response = await inside.list_all(context)
     print(response)

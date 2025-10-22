@@ -7,10 +7,14 @@ $ python3 -m venv ./.venv && source .venv/bin/activate && pip install -r require
 
 In two different tabs
 
+```
 $ cd authz-playground
 $ source .venv/bin/activate
 $ rbt dev run
+```
 
+```
 $ cd authz-playground
 $ source .venv/bin/activate
 $ python3 frontend/tester.py
+```
