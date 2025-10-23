@@ -11,9 +11,11 @@ const tester = async () => {
   )
 
   const inside = Inside.ref("thing");
-  let response = await Inside.ref("thing").listAll(context);
+  let response = await inside.listAll(context);
   console.log(response);
   console.log("!!! 2");
+
+  console.log(Inside.servicer);
 };
 
-tester();
+await tester();
